@@ -137,14 +137,14 @@ class Bomb:
         """
         ランダムな色・サイズの爆弾円Surfaceを生成する
         """
-        rad = random.randint(10, 50)
-        color = random.choice(__class__.colors)
-        self.img = pg.Surface((2*rad, 2*rad))
-        pg.draw.circle(self.img, color, (rad, rad), rad)
-        self.img.set_colorkey((0, 0, 0))
-        self.rct = self.img.get_rect()
-        self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-        self.vx = random.choice(__class__.directions)
+        rad = random.randint(10, 50) # 10~50の乱数を生成
+        color = random.choice(__class__.colors) # 色リストからランダムに一つ選ぶ
+        self.img = pg.Surface((2*rad, 2*rad)) # rad(半径)を直径に変換してSurfaceを作成
+        pg.draw.circle(self.img, color, (rad, rad), rad) # 円を描画
+        self.img.set_colorkey((0, 0, 0)) # 背景（白）を透過
+        self.rct = self.img.get_rect() # Rect生成
+        self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT) # 画面にランダムに表示
+        self.vx = random.choice(__class__.directions) # 進行方向をランダムに選択
         self.vy = random.choice(__class__.directions)
 
     def update(self, screen: pg.Surface):
