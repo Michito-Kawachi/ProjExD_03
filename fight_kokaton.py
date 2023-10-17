@@ -124,7 +124,7 @@ class Bomb:
     """
     爆弾に関するクラス
     """
-    colors = [(255, 0, 0,), (0, 255, 0), (0, 0, 255), (0, 0, 0), (255, 255, 255)]
+    colors = [(255, 0, 0,), (0, 255, 0), (0, 0, 255), (10, 10, 10), (255, 255, 255)]
     directions = [-5, +5]
     def __init__(self):
         """
@@ -154,6 +154,36 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
+class Score:
+    """
+    スコアに関するクラス
+    """
+    def __init__(self):
+        """
+        スコアを生成する
+        """
+        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0, 0, 255)
+        self.score = 0
+        self.img = self.font.render(f"スコア：{self.score}", 0, self.color)
+        self.rct = self.img.get_rect()
+        self.rct.center = 100, HEIGHT-50
+
+    def update(self, screen: pg.Surface):
+        """
+        スコアを画面に表示する
+        引数 screen：画面Surface
+        """
+        self.img = self.font.render(f"スコア：{self.score}", 0, self.color)
+        screen.blit(self.img, self.rct)
+
+    def score_plus(self):
+        """
+        呼び出されるたび、スコアを1増やす
+        """
+        self.score += 1
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -161,6 +191,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
+    score = Score()
 
     clock = pg.time.Clock()
     tmr = 0
@@ -190,6 +221,7 @@ def main():
                     beam = None
                     bombs[i] = None
                     bird.change_img(6, screen)
+                    score.score_plus()
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]
 
@@ -199,6 +231,7 @@ def main():
             bomb.update(screen)
         if beam is not None:
             beam.update(screen)
+        score.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
