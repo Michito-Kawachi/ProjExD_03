@@ -210,7 +210,7 @@ def main():
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
-    beam = None
+    beams = [] # 追加機能4:複数ビーム
     explosions = []
     score = Score()
 
@@ -222,7 +222,7 @@ def main():
                 return
             if (event.type == pg.KEYDOWN) and (event.key == pg.K_SPACE):
                 # キーが押されたら、かつ、キーの種類がスペースキーならば
-                beam = Beam(bird)
+                beams.append(Beam(bird))
 
         screen.blit(bg_img, [0, 0])
         
@@ -235,26 +235,38 @@ def main():
                 return
             
         for i, bomb in enumerate(bombs):
-            if beam is not None:
+            for j, beam in enumerate(beams):
                 if bomb.rct.colliderect(beam.rct):
-                    # ビームと爆弾の衝突判定
-                    # 撃墜=Noneにする
-                    beam = None
-                    bombs[i] = None
-                    bird.change_img(6, screen)
-                    score.score_plus() # スコアアップ用関数呼び出し
-                    # 爆発インスタンス生成、リストに追加
-                    explosions.append(Explosion(bomb.rct))
-                    pg.display.update()
+                    try:
+                        # ビームと爆弾の衝突判定
+                        # 撃墜=Noneにする
+                        beams[j] = None
+                        bombs[i] = None
+                        bird.change_img(6, screen)
+                        score.score_plus() # スコアアップ用関数呼び出し
+                        # 爆発インスタンス生成、リストに追加
+                        explosions.append(Explosion(bomb.rct))
+                        pg.display.update()
+                        # ビームリストからNoneを排除
+                        beams = [beam for beam in beams if beam is not None]
+                    except IndexError:
+                        pass
         bombs = [bomb for bomb in bombs if bomb is not None]
         # 爆発リストをlifeが0以下排除
         explosions = [explosion for explosion in explosions if explosion.life > 0]
+        # ビーム画面外でNone
+        for i, beam in enumerate(beams):
+            yoko, tate = check_bound(beam.rct)
+            if not yoko:
+                beams[i] = None
+        # ビームリストからNoneを排除
+        beams = [beam for beam in beams if beam is not None]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
         for bomb in bombs:
             bomb.update(screen)
-        if beam is not None:
+        for beam in beams: 
             beam.update(screen)
         score.update(screen)
         for explosion in explosions:
