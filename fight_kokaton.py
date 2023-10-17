@@ -1,3 +1,4 @@
+import math
 import random
 import sys
 import time
@@ -64,6 +65,8 @@ class Bird:
         self.img = self.imgs[(+5, 0)]
         self.rct = self.img.get_rect()
         self.rct.center = xy
+        # 追加機能２：有向ビーム
+        self.dire = (+5, 0)
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -90,6 +93,7 @@ class Bird:
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.img = self.imgs[tuple(sum_mv)]
+            self.dire = sum_mv # 追加機能２
         screen.blit(self.img, self.rct)
 
 
@@ -107,9 +111,12 @@ class Beam:
                     0, 
                     2.0)
         self.rct = self.img.get_rect()
-        self.rct.left = bird.rct.right # こうかとんの右横座
-        self.rct.centery = bird.rct.centery # こうかとんの中心縦座標
-        self.vx, self.vy = +5, 0
+        # 追加機能２
+        self.vx, self.vy = bird.dire
+        age = math.degrees(math.atan2(-self.vy, self.vx))
+        self.img = pg.transform.rotozoom(self.img, age, 1.0)
+        self.rct.centerx = bird.rct.centerx+(bird.rct.right-bird.rct.left) * self.vx /5
+        self.rct.centery = bird.rct.centery+(bird.rct.bottom-bird.rct.top) * self.vy /5
     
     def update(self, screen: pg.Surface):
         """
@@ -258,6 +265,8 @@ def main():
         for i, beam in enumerate(beams):
             yoko, tate = check_bound(beam.rct)
             if not yoko:
+                beams[i] = None
+            if not tate:
                 beams[i] = None
         # ビームリストからNoneを排除
         beams = [beam for beam in beams if beam is not None]
