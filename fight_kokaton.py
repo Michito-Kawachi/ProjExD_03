@@ -154,6 +154,26 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
+class Explosion:
+    """
+    爆弾がビームと衝突したときの爆発演出に関するクラス
+    """
+    img0 = pg.image.load("ex03/fig/explosion.gif")
+    img = pg.transform.flip(img0, True, True)
+    imgs = [img0, img]
+    
+    def __init__(self, rct: pg.rect):
+        self.img = __class__.imgs[0]
+        self.rct = self.img.get_rect()
+        self.rct = rct
+        self.life = 30
+    
+    def update(self, screen: pg.Surface):
+        self.life -= 1
+        self.img = __class__.imgs[self.life % 2]
+        screen.blit(self.img, self.rct)
+
+
 class Score:
     """
     スコアに関するクラス
@@ -191,6 +211,7 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
+    explosions = []
     score = Score()
 
     clock = pg.time.Clock()
@@ -221,9 +242,13 @@ def main():
                     beam = None
                     bombs[i] = None
                     bird.change_img(6, screen)
-                    score.score_plus()
+                    score.score_plus() # スコアアップ用関数呼び出し
+                    # 爆発インスタンス生成、リストに追加
+                    explosions.append(Explosion(bomb.rct))
                     pg.display.update()
         bombs = [bomb for bomb in bombs if bomb is not None]
+        # 爆発リストをlifeが0以下排除
+        explosions = [explosion for explosion in explosions if explosion.life > 0]
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -232,6 +257,8 @@ def main():
         if beam is not None:
             beam.update(screen)
         score.update(screen)
+        for explosion in explosions:
+            explosion.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
